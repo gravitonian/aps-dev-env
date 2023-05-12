@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  process:
+    image: alfresco/process-services:2.3.8 
+    environment:
+     JAVA_OPTS: " -Xms256m -Xmx1g"
+    ports:
+    - 8080:8080
+    depends_on:
+      - postgres
+      - elasticsearch
+      - process-admin
+    volumes:
+      - ./activiti-license:/usr/local/tomcat/lib
+      - ./config:/usr/local/tomcat/lib
+      - aps_contentstore:/act_data
+
+  process-admin:
+    image: alfresco/process-services-admin:2.3.8 
+    environment:
+      JAVA_OPTS: " -Xms256m -Xmx512m"
+    ports:
+    - 9090:9090
+
+  elasticsearch:
+    image: elasticsearch:7.17.1
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - 9300:9300
+      - 9200:9200
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+
+  postgres:
+    image: postgres:13.1
+    environment:
+      POSTGRES_DB: activiti
+      POSTGRES_USER: alfresco
+      POSTGRES_PASSWORD: alfresco
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    aps_contentstore:
+      external: true
+    elastic_data:
+      external: true
+    postgres_data:
+      external: true
